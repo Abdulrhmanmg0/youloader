@@ -370,6 +370,44 @@ class Downloader(QMainWindow):
             pass
 
 # ---------------- RUN ----------------
+
+def check_node_and_ffmpeg_status():
+    """Return a single-line status string about Node.js and FFmpeg availability.
+
+    This function only defines the check and does not run automatically.
+    """
+    status_parts = []
+
+    # Check Node.js availability
+    try:
+        subprocess.run(["node", "-v"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, timeout=5)
+        status_parts.append("Node.js: available")
+    except Exception:
+        status_parts.append("Node.js: not found")
+
+    # Check FFmpeg (PATH first, then local ffmpeg folder)
+    ff = shutil.which("ffmpeg")
+    if ff:
+        status_parts.append(f"FFmpeg: available (PATH: {ff})")
+    else:
+        # look for common local paths relative to script
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        local_candidates = [
+            os.path.join(script_dir, "ffmpeg", "bin", "ffmpeg.exe"),
+            os.path.join(script_dir, "ffmpeg.exe"),
+        ]
+        found = None
+        for p in local_candidates:
+            if os.path.exists(p):
+                found = p
+                break
+        if found:
+            status_parts.append(f"FFmpeg: available (local: {found})")
+        else:
+            status_parts.append("FFmpeg: not found")
+
+    return " | ".join(status_parts)
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = Downloader()
