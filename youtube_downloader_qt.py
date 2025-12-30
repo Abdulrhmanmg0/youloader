@@ -44,8 +44,6 @@ class Downloader(QMainWindow):
         self.ffmpeg_path = self.find_ffmpeg()
         self.node_installed = self.check_node()
 
-        # Debug logging for troubleshooting
-        self.write_debug_log()
 
         if not self.ffmpeg_path:
             self.auto_download_ffmpeg()
@@ -192,16 +190,7 @@ class Downloader(QMainWindow):
         self.signals.status.emit("Starting download...")
         self.signals.progress.emit(0)
 
-        # Log download attempt
-        try:
-            with open(os.path.join(os.getcwd(), "download_log.txt"), "w", encoding="utf-8") as log:
-                log.write(f"=== Download Attempt ===\n")
-                log.write(f"URL: {url}\n")
-                log.write(f"Format: {opts.get('format', 'N/A')}\n")
-                log.write(f"FFmpeg Location: {opts.get('ffmpeg_location', 'N/A')}\n")
-                log.write(f"Merge Format: {opts.get('merge_output_format', 'N/A')}\n\n")
-        except:
-            pass
+        # (logging removed: no file writes)
 
         try:
             with yt_dlp.YoutubeDL(opts) as ydl:
@@ -213,8 +202,7 @@ class Downloader(QMainWindow):
             self.signals.status.emit(f"Error: {error_msg}")
             QMessageBox.critical(self, "Download Error", 
                 f"Download failed:\n{error_msg}\n\n"
-                f"FFmpeg path: {self.ffmpeg_path}\n"
-                f"Check debug_log.txt for details.")
+                f"FFmpeg path: {self.ffmpeg_path}")
 
     def progress_hook(self, d):
         status = d.get("status")
@@ -378,7 +366,8 @@ class Downloader(QMainWindow):
                 f.write(f"Node.js Installed: {self.node_installed}\n\n")
                 f.write(f"yt-dlp Version: {yt_dlp.version.__version__}\n")
         except Exception as e:
-            print(f"Could not write debug log: {e}")
+            # Removed debug log writes; do not print or write logs
+            pass
 
 # ---------------- RUN ----------------
 if __name__ == "__main__":
